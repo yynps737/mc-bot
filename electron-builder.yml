@@ -7,15 +7,17 @@ directories:
   buildResources: resources
 
 files:
-  - dist/**/*
-  - node_modules/**/*
-  - package.json
-  - !dist/renderer/**/*
-  - dist/renderer/index.html
-  - dist/renderer/assets/**/*
+  - from: "dist"
+    to: ""
+    filter:
+      - "main/**/*"
+      - "renderer/index.html"
+      - "renderer/assets/**/*"
+  - "package.json"
+  - "node_modules/**/*"
 
 extraResources:
-  - plugins/**/*
+  - "plugins/**/*"
 
 win:
   target:

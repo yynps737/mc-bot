@@ -15,7 +15,8 @@
     "test": "jest",
     "lint": "eslint . --ext .ts,.tsx",
     "pack": "npm run build && electron-builder --dir",
-    "dist": "npm run build && electron-builder"
+    "dist": "npm run build && electron-builder",
+    "dist:win": "npm run build && electron-builder --win"
   },
   "keywords": [
     "minecraft",
