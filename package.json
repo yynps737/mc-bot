@@ -2,7 +2,7 @@
   "name": "minecraft-client",
   "version": "0.1.0",
   "description": "Cross-platform Minecraft client based on Mineflayer protocol",
-  "main": "main/index.js",
+  "main": "dist/main/index.js",
   "scripts": {
     "start": "electron .",
     "dev": "concurrently --kill-others \"npm run dev:react\" \"wait-on http://localhost:3000 && npm run dev:electron\"",

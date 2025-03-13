@@ -21,7 +21,7 @@ extraResources:
 asar: true
 
 extraMetadata:
-  main: "main/index.js"
+  main: "dist/main/index.js"
 
 win:
   target:
