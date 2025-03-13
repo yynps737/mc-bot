@@ -33,6 +33,7 @@ coverage
 *.sln
 *.sw?
 
+config.json
 # Environment variables
 .env
 .env.local

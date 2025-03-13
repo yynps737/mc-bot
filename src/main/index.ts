@@ -6,6 +6,8 @@ import Store from 'electron-store';
 import { initialize as initializeLogger, getLogger, getLogEntries } from './core/utils/logger';
 import { initializeProtocol, setMainWindow, sendChatMessage, disconnect } from './core/network/protocol';
 import { initializePlugins } from './core/plugins/loader';
+import { getMicrosoftClientId } from './core/utils/config';
+import { setupMicrosoftClientId } from './core/auth/setup-microsoft';
 
 const logger = getLogger('main');
 const store = new Store();
@@ -124,6 +126,15 @@ ipcMain.handle('open-plugins-folder', async () => {
 
 ipcMain.handle('get-app-version', async () => {
     return app.getVersion();
+});
+
+ipcMain.handle('setup-microsoft-client-id', async () => {
+    return setupMicrosoftClientId();
+});
+
+ipcMain.handle('get-microsoft-client-id-status', async () => {
+    const clientId = getMicrosoftClientId();
+    return { configured: !!clientId };
 });
 
 autoUpdater.on('update-available', () => {

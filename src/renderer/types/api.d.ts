@@ -52,6 +52,8 @@ interface Window {
         getLogs?: (maxEntries?: number) => Promise<string[]>;
         openPluginsFolder?: () => Promise<string>;
         getAppVersion?: () => Promise<string>;
+        setupMicrosoftClientId?: () => Promise<boolean>;
+        getMicrosoftClientIdStatus?: () => Promise<{ configured: boolean }>;
     };
 
     electron?: {

@@ -1,0 +1,5 @@
+{
+  "microsoftAuth": {
+    "clientId": "YOUR_MICROSOFT_CLIENT_ID_HERE"
+  }
+}

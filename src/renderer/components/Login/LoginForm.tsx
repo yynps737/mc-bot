@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface LoginFormProps {
     onLoginSuccess: (userData: {
@@ -14,6 +14,18 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
     const [loginMethod, setLoginMethod] = useState<'offline' | 'microsoft'>('offline');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [isMicrosoftIdConfigured, setIsMicrosoftIdConfigured] = useState<boolean>(false);
+
+    useEffect(() => {
+        async function checkMicrosoftConfig() {
+            if (window.api?.getMicrosoftClientIdStatus) {
+                const status = await window.api.getMicrosoftClientIdStatus();
+                setIsMicrosoftIdConfigured(status.configured);
+            }
+        }
+
+        checkMicrosoftConfig();
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -55,6 +67,26 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
             setError(error instanceof Error ? error.message : String(error));
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleMicrosoftLogin = async (e: React.MouseEvent) => {
+        e.preventDefault();
+
+        // 如果Microsoft ID未配置，先调用设置函数
+        if (!isMicrosoftIdConfigured && window.api?.setupMicrosoftClientId) {
+            const configured = await window.api.setupMicrosoftClientId();
+
+            if (configured) {
+                setIsMicrosoftIdConfigured(true);
+                // 配置成功后继续登录过程
+                handleSubmit(new Event('submit') as React.FormEvent);
+            } else {
+                setError('需要先设置Microsoft客户端ID才能使用Microsoft登录');
+            }
+        } else {
+            // 正常提交表单
+            handleSubmit(new Event('submit') as React.FormEvent);
         }
     };
 
@@ -119,7 +151,11 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
 
                     {loginMethod === 'microsoft' && (
                         <div className="mb-4 p-3 bg-accent-50 rounded-lg border border-accent-200 text-gray-700 text-sm">
-                            <p>您将被重定向到微软账户登录页面。</p>
+                            {isMicrosoftIdConfigured ? (
+                                <p>您将被重定向到微软账户登录页面。</p>
+                            ) : (
+                                <p>首次使用Microsoft登录需要设置客户端ID。点击登录按钮开始设置。</p>
+                            )}
                         </div>
                     )}
 
@@ -132,13 +168,14 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
                     )}
 
                     <button
-                        type="submit"
+                        type={loginMethod === 'microsoft' ? 'button' : 'submit'}
                         className={`w-full py-2 px-4 rounded-lg font-medium transition-all ${
                             isLoading
                                 ? 'bg-gray-300 cursor-not-allowed'
                                 : 'bg-primary-500 hover:bg-primary-600 text-white hover:shadow-lg'
                         }`}
                         disabled={isLoading}
+                        onClick={loginMethod === 'microsoft' ? handleMicrosoftLogin : undefined}
                     >
             <span className="flex items-center justify-center">
               {isLoading && (
