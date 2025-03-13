@@ -50,6 +50,11 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
                     throw new Error(result.error || '登录失败');
                 }
             } else {
+                // 检查是否配置了Microsoft Client ID
+                if (!isMicrosoftIdConfigured) {
+                    throw new Error('未配置Microsoft客户端ID，请在项目根目录下的config.json文件中设置');
+                }
+
                 const result = await window.api.loginMicrosoft();
 
                 if (result.success) {
@@ -67,26 +72,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
             setError(error instanceof Error ? error.message : String(error));
         } finally {
             setIsLoading(false);
-        }
-    };
-
-    const handleMicrosoftLogin = async (e: React.MouseEvent) => {
-        e.preventDefault();
-
-        // 如果Microsoft ID未配置，先调用设置函数
-        if (!isMicrosoftIdConfigured && window.api?.setupMicrosoftClientId) {
-            const configured = await window.api.setupMicrosoftClientId();
-
-            if (configured) {
-                setIsMicrosoftIdConfigured(true);
-                // 配置成功后继续登录过程
-                handleSubmit(new Event('submit') as React.FormEvent);
-            } else {
-                setError('需要先设置Microsoft客户端ID才能使用Microsoft登录');
-            }
-        } else {
-            // 正常提交表单
-            handleSubmit(new Event('submit') as React.FormEvent);
         }
     };
 
@@ -154,7 +139,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
                             {isMicrosoftIdConfigured ? (
                                 <p>您将被重定向到微软账户登录页面。</p>
                             ) : (
-                                <p>首次使用Microsoft登录需要设置客户端ID。点击登录按钮开始设置。</p>
+                                <p>使用Microsoft登录需要先在项目根目录下的config.json文件中设置客户端ID。</p>
                             )}
                         </div>
                     )}
@@ -168,24 +153,23 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
                     )}
 
                     <button
-                        type={loginMethod === 'microsoft' ? 'button' : 'submit'}
+                        type="submit"
                         className={`w-full py-2 px-4 rounded-lg font-medium transition-all ${
-                            isLoading
+                            isLoading || (loginMethod === 'microsoft' && !isMicrosoftIdConfigured)
                                 ? 'bg-gray-300 cursor-not-allowed'
                                 : 'bg-primary-500 hover:bg-primary-600 text-white hover:shadow-lg'
                         }`}
-                        disabled={isLoading}
-                        onClick={loginMethod === 'microsoft' ? handleMicrosoftLogin : undefined}
+                        disabled={isLoading || (loginMethod === 'microsoft' && !isMicrosoftIdConfigured)}
                     >
-            <span className="flex items-center justify-center">
-              {isLoading && (
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-              )}
-                {isLoading ? '登录中...' : loginMethod === 'offline' ? '用户名登录' : '微软账户登录'}
-            </span>
+                        <span className="flex items-center justify-center">
+                            {isLoading && (
+                                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            )}
+                            {isLoading ? '登录中...' : loginMethod === 'offline' ? '用户名登录' : '微软账户登录'}
+                        </span>
                     </button>
                 </form>
             </div>

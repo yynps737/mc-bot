@@ -54,7 +54,7 @@ export async function startMicrosoftAuth(): Promise<{
             logger.error('Microsoft客户端ID未配置');
             return {
                 success: false,
-                error: '未配置Microsoft客户端ID，请在配置文件中设置'
+                error: '未配置Microsoft客户端ID，请在config.json文件中设置'
             };
         }
 

@@ -7,7 +7,6 @@ import { initialize as initializeLogger, getLogger, getLogEntries } from './core
 import { initializeProtocol, setMainWindow, sendChatMessage, disconnect } from './core/network/protocol';
 import { initializePlugins } from './core/plugins/loader';
 import { getMicrosoftClientId } from './core/utils/config';
-import { setupMicrosoftClientId } from './core/auth/setup-microsoft';
 
 const logger = getLogger('main');
 const store = new Store();
@@ -128,13 +127,12 @@ ipcMain.handle('get-app-version', async () => {
     return app.getVersion();
 });
 
-ipcMain.handle('setup-microsoft-client-id', async () => {
-    return setupMicrosoftClientId();
-});
-
 ipcMain.handle('get-microsoft-client-id-status', async () => {
     const clientId = getMicrosoftClientId();
-    return { configured: !!clientId };
+    return {
+        configured: !!clientId,
+        canConfigure: false // 表示不能通过UI配置
+    };
 });
 
 autoUpdater.on('update-available', () => {

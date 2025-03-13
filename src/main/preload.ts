@@ -39,7 +39,6 @@ contextBridge.exposeInMainWorld('api', {
     getLogs: (maxEntries?: number) => ipcRenderer.invoke('get-logs', maxEntries),
     openPluginsFolder: () => ipcRenderer.invoke('open-plugins-folder'),
     getAppVersion: () => ipcRenderer.invoke('get-app-version'),
-    setupMicrosoftClientId: () => ipcRenderer.invoke('setup-microsoft-client-id'),
     getMicrosoftClientIdStatus: () => ipcRenderer.invoke('get-microsoft-client-id-status'),
 });
 

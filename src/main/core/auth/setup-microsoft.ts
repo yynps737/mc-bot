@@ -1,15 +1,14 @@
 import { BrowserWindow, dialog } from 'electron';
 import { getLogger } from '../utils/logger';
-import { saveConfig } from '../utils/config';
 
 const logger = getLogger('auth:setup-microsoft');
 
 /**
- * 打开一个对话框，让用户输入Microsoft客户端ID
+ * 此功能已弃用 - 现在只支持从config.json文件读取Microsoft客户端ID
  */
 export async function setupMicrosoftClientId(): Promise<boolean> {
     try {
-        // 创建一个简单的窗口用于输入Microsoft Client ID
+        // 创建一个简单的窗口用于显示提示信息
         const setupWindow = new BrowserWindow({
             width: 500,
             height: 300,
@@ -24,13 +23,13 @@ export async function setupMicrosoftClientId(): Promise<boolean> {
             modal: true
         });
 
-        // 创建简单的HTML内容，包含输入框和按钮
+        // 创建简单的HTML内容，包含提示信息
         const htmlContent = `
     <!DOCTYPE html>
     <html>
     <head>
       <meta charset="UTF-8">
-      <title>设置Microsoft客户端ID</title>
+      <title>Microsoft客户端ID配置</title>
       <style>
         body {
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -48,13 +47,8 @@ export async function setupMicrosoftClientId(): Promise<boolean> {
           padding: 20px;
           box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        input {
-          width: 100%;
-          padding: 10px;
-          margin: 10px 0;
-          border: 1px solid #ddd;
-          border-radius: 4px;
-          box-sizing: border-box;
+        p {
+          line-height: 1.5;
         }
         button {
           background-color: #0078d7;
@@ -63,17 +57,10 @@ export async function setupMicrosoftClientId(): Promise<boolean> {
           padding: 10px 15px;
           border-radius: 4px;
           cursor: pointer;
-          margin-right: 10px;
+          margin-top: 10px;
         }
         button:hover {
           background-color: #005a9e;
-        }
-        button.cancel {
-          background-color: #d9d9d9;
-          color: #333;
-        }
-        button.cancel:hover {
-          background-color: #c1c1c1;
         }
         .info {
           margin-top: 15px;
@@ -84,33 +71,26 @@ export async function setupMicrosoftClientId(): Promise<boolean> {
     </head>
     <body>
       <div class="container">
-        <h2>设置Microsoft客户端ID</h2>
-        <p>请输入您从Azure门户获取的Microsoft客户端ID：</p>
-        <input type="text" id="clientId" placeholder="Microsoft客户端ID">
-        <div>
-          <button id="saveBtn">保存</button>
-          <button class="cancel" id="cancelBtn">取消</button>
-        </div>
+        <h2>Microsoft客户端ID配置</h2>
+        <p>此应用程序现在只支持从配置文件读取Microsoft客户端ID。</p>
+        <p>请在项目根目录创建或编辑 <strong>config.json</strong> 文件，并设置以下内容：</p>
+        <pre style="background-color: #f0f0f0; padding: 10px; border-radius: 4px; overflow: auto;">
+{
+  "microsoftAuth": {
+    "clientId": "您的Microsoft客户端ID"
+  }
+}</pre>
+        <p>配置完成后重启应用程序。</p>
         <div class="info">
-          <p>这个ID将会被安全地保存在您的用户数据目录中。</p>
+          <p>您可以从Azure门户获取Microsoft客户端ID。</p>
         </div>
+        <button id="closeBtn">关闭</button>
       </div>
       <script>
-        const saveBtn = document.getElementById('saveBtn');
-        const cancelBtn = document.getElementById('cancelBtn');
-        const clientIdInput = document.getElementById('clientId');
+        const closeBtn = document.getElementById('closeBtn');
         
-        saveBtn.addEventListener('click', () => {
-          const clientId = clientIdInput.value.trim();
-          if (clientId) {
-            window.location.href = 'mc-auth-callback://save?clientId=' + encodeURIComponent(clientId);
-          } else {
-            alert('请输入有效的Microsoft客户端ID');
-          }
-        });
-        
-        cancelBtn.addEventListener('click', () => {
-          window.location.href = 'mc-auth-callback://cancel';
+        closeBtn.addEventListener('click', () => {
+          window.close();
         });
       </script>
     </body>
@@ -120,52 +100,12 @@ export async function setupMicrosoftClientId(): Promise<boolean> {
         setupWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(htmlContent)}`);
 
         return new Promise<boolean>((resolve) => {
-            setupWindow.webContents.on('will-navigate', async (event, url) => {
-                event.preventDefault();
-
-                if (url.startsWith('mc-auth-callback://save')) {
-                    const urlObj = new URL(url);
-                    const clientId = urlObj.searchParams.get('clientId');
-
-                    if (clientId) {
-                        // 保存Client ID到配置
-                        const saved = saveConfig({
-                            microsoftAuth: {
-                                clientId
-                            }
-                        });
-
-                        if (saved) {
-                            await dialog.showMessageBox(setupWindow, {
-                                type: 'info',
-                                title: '配置已保存',
-                                message: 'Microsoft客户端ID已成功保存。',
-                                buttons: ['确定']
-                            });
-                            setupWindow.close();
-                            resolve(true);
-                        } else {
-                            await dialog.showMessageBox(setupWindow, {
-                                type: 'error',
-                                title: '保存失败',
-                                message: '无法保存配置。请检查应用权限。',
-                                buttons: ['确定']
-                            });
-                            resolve(false);
-                        }
-                    }
-                } else if (url.startsWith('mc-auth-callback://cancel')) {
-                    setupWindow.close();
-                    resolve(false);
-                }
-            });
-
             setupWindow.on('closed', () => {
                 resolve(false);
             });
         });
     } catch (error) {
-        logger.error('设置Microsoft客户端ID失败:', error);
+        logger.error('显示Microsoft客户端ID配置信息失败:', error);
         return false;
     }
 }

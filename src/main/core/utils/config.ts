@@ -42,27 +42,27 @@ export function getConfig(): AppConfig {
             return config;
         }
 
+        // 本地根目录配置文件路径 - 优先使用
+        const rootConfigPath = path.join(process.cwd(), 'config.json');
+
         // 用户数据目录中的配置文件路径
         const userConfigPath = path.join(app.getPath('userData'), 'config.json');
 
-        // 本地开发配置文件路径
-        const devConfigPath = path.join(process.cwd(), 'config.json');
+        // 先尝试从根目录读取
+        if (fs.existsSync(rootConfigPath)) {
+            const configData = fs.readFileSync(rootConfigPath, 'utf-8');
+            const config = { ...defaultConfig, ...JSON.parse(configData) };
+            cachedConfig = config;
+            logger.info('从根目录加载配置文件');
+            return config;
+        }
 
-        // 先尝试从用户数据目录读取
+        // 再尝试从用户数据目录读取
         if (fs.existsSync(userConfigPath)) {
             const configData = fs.readFileSync(userConfigPath, 'utf-8');
             const config = { ...defaultConfig, ...JSON.parse(configData) };
             cachedConfig = config;
             logger.info('从用户数据目录加载配置文件');
-            return config;
-        }
-
-        // 再尝试从当前工作目录读取
-        if (fs.existsSync(devConfigPath)) {
-            const configData = fs.readFileSync(devConfigPath, 'utf-8');
-            const config = { ...defaultConfig, ...JSON.parse(configData) };
-            cachedConfig = config;
-            logger.info('从开发目录加载配置文件');
             return config;
         }
 
@@ -91,22 +91,4 @@ export function getConfig(): AppConfig {
 export function getMicrosoftClientId(): string {
     const config = getConfig();
     return config.microsoftAuth.clientId;
-}
-
-export function saveConfig(config: Partial<AppConfig>): boolean {
-    try {
-        const userConfigPath = path.join(app.getPath('userData'), 'config.json');
-        const currentConfig = getConfig();
-        const newConfig = { ...currentConfig, ...config };
-
-        fs.writeFileSync(userConfigPath, JSON.stringify(newConfig, null, 2), 'utf-8');
-        logger.info('配置已保存');
-
-        // 更新缓存
-        cachedConfig = newConfig;
-        return true;
-    } catch (error) {
-        logger.error('保存配置文件失败:', error);
-        return false;
-    }
 }
