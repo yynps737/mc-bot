@@ -1,12 +1,12 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import path from 'path';
+import * as path from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
     plugins: [react()],
     base: './',
-    root: path.join(__dirname, 'src/renderer'), // 关键修复：指定正确的根目录
+    root: path.join(__dirname, 'src/renderer'),
     server: {
         port: 3000,
         host: '0.0.0.0',
@@ -23,7 +23,7 @@ export default defineConfig({
         },
     },
     build: {
-        outDir: path.join(__dirname, 'dist/renderer'), // 更新输出目录为绝对路径
+        outDir: path.join(__dirname, 'dist/renderer'),
         emptyOutDir: true,
         sourcemap: true,
     },

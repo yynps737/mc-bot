@@ -7,17 +7,21 @@ directories:
   buildResources: resources
 
 files:
-  - from: "dist"
-    to: ""
-    filter:
-      - "main/**/*"
-      - "renderer/index.html"
-      - "renderer/assets/**/*"
+  - "dist/**/*"
+  - "!dist/win-unpacked/**/*"
+  - "!dist/builder-effective-config.yaml"
+  - "!dist/builder-debug.yml"
   - "package.json"
   - "node_modules/**/*"
 
 extraResources:
-  - "plugins/**/*"
+  - from: "plugins"
+    to: "plugins"
+
+asar: true
+
+extraMetadata:
+  main: "main/index.js"
 
 win:
   target:
