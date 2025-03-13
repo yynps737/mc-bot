@@ -8,6 +8,7 @@ export default defineConfig({
     base: './',
     server: {
         port: 3000,
+        host: '0.0.0.0', // 添加这一行
     },
     resolve: {
         alias: {

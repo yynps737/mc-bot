@@ -53,7 +53,7 @@ export async function getAvailableVersions(): Promise<MinecraftVersion[]> {
             type: version.type,
             releaseTime: version.releaseTime,
             // Check if this version is in our list of supported versions
-            supported: KNOWN_SUPPORTED_VERSIONS.some(supportedVersion =>
+            supported: KNOWN_SUPPORTED_VERSIONS.some((supportedVersion: string) =>
                 version.id === supportedVersion || version.id.startsWith(`${supportedVersion}-`))
         }));
 
@@ -61,7 +61,7 @@ export async function getAvailableVersions(): Promise<MinecraftVersion[]> {
         versionCache = versions;
         lastCacheUpdate = Date.now();
 
-        logger.info(`Fetched ${versions.length} Minecraft versions, ${versions.filter(v => v.supported).length} supported`);
+        logger.info(`Fetched ${versions.length} Minecraft versions, ${versions.filter((v: MinecraftVersion) => v.supported).length} supported`);
 
         return versions;
     } catch (error) {

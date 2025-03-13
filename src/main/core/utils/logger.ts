@@ -1,6 +1,7 @@
 import { app } from 'electron';
 import * as path from 'path';
 import electronLog from 'electron-log';
+import * as fs from 'fs';
 
 // Configure different log transports
 let initialized = false;
@@ -20,7 +21,8 @@ export function initialize(): void {
     // Configure log file rotation
     electronLog.transports.file.maxSize = 10 * 1024 * 1024; // 10MB
     electronLog.transports.file.archiveLog = (oldPath) => {
-        const newPath = oldPath.replace(/\.log$/, `.${Date.now()}.log`);
+        // Generate a new path with timestamp
+        const newPath = oldPath.toString().replace(/\.log$/, `.${Date.now()}.log`);
         return { oldPath, newPath };
     };
 
@@ -76,11 +78,15 @@ export function getLogger(moduleName: string) {
  */
 export function getLogEntries(maxEntries = 100): string[] {
     try {
-        // This is a simple implementation - might want to enhance with proper log parsing
-        const logFile = electronLog.transports.file.getFile();
-        if (!logFile) return [];
+        // Get the log file path
+        const logFilePath = electronLog.transports.file.getFile().path;
 
-        const content = logFile.readAsText();
+        if (!logFilePath || !fs.existsSync(logFilePath)) {
+            return [];
+        }
+
+        // Read the log file content
+        const content = fs.readFileSync(logFilePath, 'utf8');
         const lines = content.split('\n').filter(Boolean);
 
         return lines.slice(-maxEntries);
