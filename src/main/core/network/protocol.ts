@@ -4,28 +4,17 @@ import { getLogger } from '../utils/logger';
 import { getPluginManager } from '../plugins/loader';
 
 const logger = getLogger('network:protocol');
-
-// Track active client connection
 let activeBot: mineflayer.Bot | null = null;
 let mainWindow: BrowserWindow | null = null;
 
-/**
- * Initialize the Mineflayer protocol system
- */
 export function initializeProtocol(): void {
-    logger.info('Initializing Mineflayer protocol system');
+    logger.info('初始化 Mineflayer 协议系统');
 }
 
-/**
- * Set the main window reference for event dispatching
- */
 export function setMainWindow(window: BrowserWindow): void {
     mainWindow = window;
 }
 
-/**
- * Connect to a Minecraft server using Mineflayer
- */
 export async function connectToServer({
                                           serverIp,
                                           serverPort,
@@ -40,15 +29,11 @@ export async function connectToServer({
     token?: string;
 }): Promise<{ success: boolean; error?: string }> {
     try {
-        // Disconnect from any existing connection
         if (activeBot) {
-            activeBot.end('Disconnecting to connect to another server');
+            activeBot.end('正在连接到其他服务器');
             activeBot = null;
         }
 
-        logger.info(`Connecting to ${serverIp}:${serverPort} as ${username} using Minecraft ${version}`);
-
-        // Create bot options
         const botOptions: mineflayer.BotOptions = {
             host: serverIp,
             port: serverPort,
@@ -57,58 +42,42 @@ export async function connectToServer({
             auth: token ? 'microsoft' : 'offline',
         };
 
-        // Add auth token if provided (online mode)
         if (token) {
             botOptions.password = token;
         }
 
-        // Create the bot
         const bot = mineflayer.createBot(botOptions);
         activeBot = bot;
 
-        // Set up event handlers
         setupBotEventHandlers(bot);
 
-        // Wait for spawn or error
         return new Promise((resolve) => {
-            // Success handler
             bot.once('spawn', () => {
-                logger.info('Successfully connected and spawned in the world');
                 resolve({ success: true });
             });
 
-            // Error handlers
             bot.once('error', (err) => {
-                logger.error('Connection error:', err);
                 resolve({ success: false, error: err.message });
             });
 
             bot.once('kicked', (reason) => {
-                logger.error('Kicked from server:', reason);
-                resolve({ success: false, error: `Kicked: ${reason}` });
+                resolve({ success: false, error: `被踢出: ${reason}` });
             });
 
-            // Set a timeout in case neither spawn nor error happens
             setTimeout(() => {
-                if (bot.entity) return; // Already spawned
-                logger.error('Connection timeout');
-                resolve({ success: false, error: 'Connection timeout' });
-            }, 30000); // 30 second timeout
+                if (bot.entity) return;
+                resolve({ success: false, error: '连接超时' });
+            }, 30000);
         });
     } catch (error) {
-        logger.error('Error connecting to server:', error);
         return {
             success: false,
-            error: error instanceof Error ? error.message : 'Unknown error connecting to server'
+            error: error instanceof Error ? error.message : '连接服务器时出错'
         };
     }
 }
 
-/**
- * Set up bot event handlers to relay events to the renderer process
- */
 function setupBotEventHandlers(bot: mineflayer.Bot): void {
-    // Game events
     bot.on('chat', (username, message) => {
         sendGameEvent('chat', { username, message });
     });
@@ -130,7 +99,6 @@ function setupBotEventHandlers(bot: mineflayer.Bot): void {
     });
 
     bot.on('move', () => {
-        // Only send position updates occasionally to avoid overwhelming the renderer
         if (Math.random() < 0.1) {
             sendGameEvent('position', {
                 x: bot.entity.position.x,
@@ -148,33 +116,23 @@ function setupBotEventHandlers(bot: mineflayer.Bot): void {
         sendGameEvent('playerLeft', { username: player.username });
     });
 
-    // Initialize plugins with the bot
     const pluginManager = getPluginManager();
     pluginManager.initializePlugins(bot);
 }
 
-/**
- * Send game events to the renderer process
- */
 function sendGameEvent(event: string, data: any): void {
     if (!mainWindow) return;
     try {
         mainWindow.webContents.send('game-event', event, data);
     } catch (error) {
-        logger.error('Error sending game event to renderer:', error);
+        logger.error('向渲染进程发送游戏事件时出错:', error);
     }
 }
 
-/**
- * Get the active bot instance (for plugin use)
- */
 export function getActiveBot(): mineflayer.Bot | null {
     return activeBot;
 }
 
-/**
- * Send a chat message to the server
- */
 export function sendChatMessage(message: string): boolean {
     if (!activeBot) return false;
 
@@ -182,17 +140,14 @@ export function sendChatMessage(message: string): boolean {
         activeBot.chat(message);
         return true;
     } catch (error) {
-        logger.error('Error sending chat message:', error);
+        logger.error('发送聊天消息时出错:', error);
         return false;
     }
 }
 
-/**
- * Disconnect from the current server
- */
 export function disconnect(): void {
     if (activeBot) {
-        activeBot.end('User disconnected');
+        activeBot.end('用户断开连接');
         activeBot = null;
     }
 }

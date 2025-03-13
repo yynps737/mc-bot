@@ -1,72 +1,41 @@
-// src/renderer/components/UI/WindowControls.tsx
 import React from 'react';
 
-/**
- * 自定义窗口控制按钮组件
- * 用于无边框窗口的最小化、最大化/还原和关闭按钮
- */
 const WindowControls: React.FC = () => {
     const isElectron = !!window.api?.isElectron;
 
-    // 如果不在Electron环境中，不渲染控制按钮
     if (!isElectron) {
         return null;
     }
 
-    // 最小化窗口
-    const handleMinimize = () => {
-        // 使用Electron的remote API (在preload中需要暴露此功能)
-        if (window.electron?.minimize) {
-            window.electron.minimize();
-        }
-    };
-
-    // 最大化/还原窗口
-    const handleMaximizeRestore = () => {
-        if (window.electron?.maximizeRestore) {
-            window.electron.maximizeRestore();
-        }
-    };
-
-    // 关闭窗口
-    const handleClose = () => {
-        if (window.electron?.close) {
-            window.electron.close();
-        }
-    };
-
     return (
-        <div className="flex items-center ml-auto">
-            {/* 最小化按钮 */}
+        <div className="flex">
             <button
-                className="w-10 h-8 flex items-center justify-center hover:bg-gray-700 transition-colors"
-                onClick={handleMinimize}
+                className="w-10 h-8 flex items-center justify-center hover:bg-primary-100 transition-colors"
+                onClick={() => window.electron?.minimize?.()}
                 aria-label="最小化"
             >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 12H4"></path>
+                <svg className="w-4 h-4 text-gray-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M5 10a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z" clipRule="evenodd" />
                 </svg>
             </button>
 
-            {/* 最大化/还原按钮 */}
             <button
-                className="w-10 h-8 flex items-center justify-center hover:bg-gray-700 transition-colors"
-                onClick={handleMaximizeRestore}
+                className="w-10 h-8 flex items-center justify-center hover:bg-primary-100 transition-colors"
+                onClick={() => window.electron?.maximizeRestore?.()}
                 aria-label="最大化/还原"
             >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 8h16M4 16h16"></path>
+                <svg className="w-4 h-4 text-gray-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm1 0v12h12V4H4z" clipRule="evenodd" />
                 </svg>
             </button>
 
-            {/* 关闭按钮 */}
             <button
-                className="w-10 h-8 flex items-center justify-center hover:bg-red-600 transition-colors"
-                onClick={handleClose}
+                className="w-10 h-8 flex items-center justify-center hover:bg-red-500 hover:text-white transition-colors"
+                onClick={() => window.electron?.close?.()}
                 aria-label="关闭"
             >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
                 </svg>
             </button>
         </div>

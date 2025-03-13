@@ -1,4 +1,4 @@
-import { BrowserWindow, app } from 'electron';
+import { BrowserWindow } from 'electron';
 import axios from 'axios';
 import { getLogger } from '../utils/logger';
 import { encryptData } from '../utils/security';
@@ -7,9 +7,7 @@ import Store from 'electron-store';
 const logger = getLogger('auth:microsoft');
 const store = new Store({ name: 'auth' });
 
-// Microsoft OAuth2 Configuration
-// Note: In a real application, these should be kept secret and not hardcoded
-const MICROSOFT_CLIENT_ID = 'YOUR_MS_CLIENT_ID'; // You need to register an app with Microsoft
+const MICROSOFT_CLIENT_ID = 'YOUR_MS_CLIENT_ID';
 const REDIRECT_URI = 'https://login.microsoftonline.com/common/oauth2/nativeclient';
 const MICROSOFT_AUTH_URL = 'https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize';
 const MICROSOFT_TOKEN_URL = 'https://login.microsoftonline.com/consumers/oauth2/v2.0/token';
@@ -24,9 +22,6 @@ interface TokenResponse {
     expires_in: number;
 }
 
-/**
- * Start Microsoft OAuth2 authentication flow
- */
 export async function startMicrosoftAuth(): Promise<{
     success: boolean;
     username?: string;
@@ -35,10 +30,8 @@ export async function startMicrosoftAuth(): Promise<{
     error?: string;
 }> {
     try {
-        // First check if we have a valid cached token
         const cachedAuth = getCachedAuth();
         if (cachedAuth) {
-            logger.info('Using cached Microsoft auth token');
             return {
                 success: true,
                 username: cachedAuth.username,
@@ -47,14 +40,12 @@ export async function startMicrosoftAuth(): Promise<{
             };
         }
 
-        // Create the authorization URL with required scopes
         const authUrl = new URL(MICROSOFT_AUTH_URL);
         authUrl.searchParams.append('client_id', MICROSOFT_CLIENT_ID);
         authUrl.searchParams.append('response_type', 'code');
         authUrl.searchParams.append('redirect_uri', REDIRECT_URI);
         authUrl.searchParams.append('scope', 'XboxLive.signin offline_access');
 
-        // Open a new browser window for the user to log in
         const authWindow = new BrowserWindow({
             width: 800,
             height: 600,
@@ -65,7 +56,6 @@ export async function startMicrosoftAuth(): Promise<{
             }
         });
 
-        // Handle the redirect and extract the authorization code
         return new Promise((resolve) => {
             authWindow.webContents.on('will-redirect', async (event, url) => {
                 const urlObj = new URL(url);
@@ -75,22 +65,12 @@ export async function startMicrosoftAuth(): Promise<{
                     authWindow.close();
 
                     try {
-                        // Exchange authorization code for tokens
                         const msTokens = await getMicrosoftToken(code);
-
-                        // Authenticate with Xbox Live
                         const xblToken = await getXboxLiveToken(msTokens.access_token);
-
-                        // Get XSTS token
                         const xstsToken = await getXSTSToken(xblToken);
-
-                        // Authenticate with Minecraft
                         const minecraftToken = await getMinecraftToken(xstsToken);
-
-                        // Get Minecraft profile
                         const profile = await getMinecraftProfile(minecraftToken);
 
-                        // Cache the auth data
                         cacheAuth({
                             username: profile.name,
                             uuid: profile.id,
@@ -106,10 +86,9 @@ export async function startMicrosoftAuth(): Promise<{
                             token: minecraftToken
                         });
                     } catch (error) {
-                        logger.error('Error in Microsoft auth flow:', error);
                         resolve({
                             success: false,
-                            error: error instanceof Error ? error.message : 'Authentication failed'
+                            error: error instanceof Error ? error.message : '认证失败'
                         });
                     }
                 }
@@ -118,25 +97,20 @@ export async function startMicrosoftAuth(): Promise<{
             authWindow.on('closed', () => {
                 resolve({
                     success: false,
-                    error: 'Authentication window was closed'
+                    error: '认证窗口已关闭'
                 });
             });
 
-            // Load the Microsoft authorization page
             authWindow.loadURL(authUrl.toString());
         });
     } catch (error) {
-        logger.error('Microsoft auth error:', error);
         return {
             success: false,
-            error: error instanceof Error ? error.message : 'Unknown error in Microsoft authentication'
+            error: error instanceof Error ? error.message : '微软认证失败'
         };
     }
 }
 
-/**
- * Exchange authorization code for Microsoft access and refresh tokens
- */
 async function getMicrosoftToken(code: string): Promise<TokenResponse> {
     const response = await axios.post(MICROSOFT_TOKEN_URL, new URLSearchParams({
         client_id: MICROSOFT_CLIENT_ID,
@@ -152,9 +126,6 @@ async function getMicrosoftToken(code: string): Promise<TokenResponse> {
     return response.data;
 }
 
-/**
- * Get Xbox Live token using Microsoft access token
- */
 async function getXboxLiveToken(accessToken: string): Promise<string> {
     const response = await axios.post(XBOX_AUTH_URL, {
         Properties: {
@@ -174,9 +145,6 @@ async function getXboxLiveToken(accessToken: string): Promise<string> {
     return response.data.Token;
 }
 
-/**
- * Get XSTS token using Xbox Live token
- */
 async function getXSTSToken(xblToken: string): Promise<{ token: string; userHash: string }> {
     const response = await axios.post(XSTS_AUTH_URL, {
         Properties: {
@@ -198,9 +166,6 @@ async function getXSTSToken(xblToken: string): Promise<{ token: string; userHash
     };
 }
 
-/**
- * Get Minecraft token using XSTS token
- */
 async function getMinecraftToken(xstsData: { token: string; userHash: string }): Promise<string> {
     const response = await axios.post(MINECRAFT_AUTH_URL, {
         identityToken: `XBL3.0 x=${xstsData.userHash};${xstsData.token}`
@@ -214,9 +179,6 @@ async function getMinecraftToken(xstsData: { token: string; userHash: string }):
     return response.data.access_token;
 }
 
-/**
- * Get Minecraft profile using Minecraft token
- */
 async function getMinecraftProfile(minecraftToken: string): Promise<{ id: string; name: string }> {
     const response = await axios.get(MINECRAFT_PROFILE_URL, {
         headers: {
@@ -230,9 +192,6 @@ async function getMinecraftProfile(minecraftToken: string): Promise<{ id: string
     };
 }
 
-/**
- * Cache authentication data locally
- */
 function cacheAuth(authData: {
     username: string;
     uuid: string;
@@ -240,32 +199,18 @@ function cacheAuth(authData: {
     refreshToken: string;
     expiresAt: number;
 }): void {
-    // Encrypt sensitive data before storing
-    const encryptedData = encryptData(JSON.stringify({
-        username: authData.username,
-        uuid: authData.uuid,
-        token: authData.token,
-        refreshToken: authData.refreshToken,
-        expiresAt: authData.expiresAt
-    }));
-
+    const encryptedData = encryptData(JSON.stringify(authData));
     store.set('microsoft_auth', encryptedData);
 }
 
-/**
- * Get cached authentication data if available and not expired
- */
 function getCachedAuth(): { username: string; uuid: string; token: string } | null {
     try {
         const encryptedData = store.get('microsoft_auth') as string | undefined;
         if (!encryptedData) return null;
 
-        // TODO: Add decryption logic here
         const authData = JSON.parse(encryptedData);
 
-        // Check if token is expired
         if (authData.expiresAt < Date.now()) {
-            // TODO: Implement refresh token logic
             return null;
         }
 
@@ -275,7 +220,6 @@ function getCachedAuth(): { username: string; uuid: string; token: string } | nu
             token: authData.token
         };
     } catch (error) {
-        logger.error('Error retrieving cached auth:', error);
         return null;
     }
-}``
+}

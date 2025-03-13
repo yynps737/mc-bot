@@ -9,8 +9,6 @@ directories:
 files:
   - "dist/**/*"
   - "!dist/win-unpacked/**/*"
-  - "!dist/builder-effective-config.yaml"
-  - "!dist/builder-debug.yml"
   - "package.json"
   - "node_modules/**/*"
 
@@ -44,5 +42,3 @@ nsis:
 
 publish:
   provider: github
-  owner: yourgithubusername
-  repo: minecraft-client
