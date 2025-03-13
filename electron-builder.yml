@@ -1,0 +1,42 @@
+appId: com.minecraft.client
+productName: Minecraft Client
+copyright: Copyright © 2025
+
+directories:
+  output: dist
+  buildResources: resources
+
+files:
+  - from: dist
+    to: .
+    filter:
+      - "**/*"
+  - node_modules/**/*
+  - package.json
+
+extraResources:
+  - plugins/**/*
+
+win:
+  target:
+    - nsis
+  icon: resources/icons/icon.ico
+
+linux:
+  target:
+    - AppImage
+    - deb
+  icon: resources/icons/icon.png
+  category: Game
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Minecraft Client
+
+publish:
+  provider: github
+  owner: yourgithubusername
+  repo: minecraft-client

@@ -1,0 +1,83 @@
+{
+  "name": "minecraft-client",
+  "version": "0.1.0",
+  "description": "Cross-platform Minecraft client based on Mineflayer protocol",
+  "main": "dist/main/index.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "concurrently \"npm run dev:electron\" \"npm run dev:react\"",
+    "dev:electron": "tsc -p tsconfig.electron.json -w",
+    "dev:react": "vite",
+    "build": "npm run build:electron && npm run build:react",
+    "build:electron": "tsc -p tsconfig.electron.json",
+    "build:react": "vite build",
+    "test": "jest",
+    "lint": "eslint . --ext .ts,.tsx",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
+  },
+  "keywords": [
+    "minecraft",
+    "mineflayer",
+    "electron",
+    "react",
+    "client"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.2",
+    "electron-log": "^5.0.0",
+    "electron-store": "^8.1.0",
+    "electron-updater": "^6.1.4",
+    "mineflayer": "^4.14.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.6",
+    "@types/node": "^20.8.7",
+    "@types/react": "^18.2.31",
+    "@types/react-dom": "^18.2.14",
+    "@types/uuid": "^9.0.6",
+    "@typescript-eslint/eslint-plugin": "^6.9.0",
+    "@typescript-eslint/parser": "^6.9.0",
+    "@vitejs/plugin-react": "^4.1.0",
+    "autoprefixer": "^10.4.16",
+    "concurrently": "^8.2.2",
+    "electron": "^27.0.2",
+    "electron-builder": "^24.6.4",
+    "eslint": "^8.52.0",
+    "eslint-plugin-react": "^7.33.2",
+    "jest": "^29.7.0",
+    "postcss": "^8.4.31",
+    "tailwindcss": "^3.3.5",
+    "ts-jest": "^29.1.1",
+    "typescript": "^5.2.2",
+    "vite": "^4.5.0"
+  },
+  "build": {
+    "appId": "com.minecraft.client",
+    "productName": "Minecraft Client",
+    "files": [
+      "dist/**/*",
+      "node_modules/**/*"
+    ],
+    "directories": {
+      "buildResources": "resources"
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Game"
+    }
+  }
+}
