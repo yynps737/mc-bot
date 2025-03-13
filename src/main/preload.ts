@@ -1,8 +1,14 @@
 import { contextBridge, ipcRenderer } from 'electron';
 
+// 添加调试输出
+console.log('预加载脚本正在运行...');
+
 // Expose protected methods that allow the renderer process to use IPC
 contextBridge.exposeInMainWorld(
     'api', {
+        // 标识在Electron环境中运行
+        isElectron: true,
+
         // Authentication
         loginOffline: (username: string) => ipcRenderer.invoke('login-offline', username),
         loginMicrosoft: () => ipcRenderer.invoke('login-microsoft'),
@@ -21,12 +27,14 @@ contextBridge.exposeInMainWorld(
 
         // App updates
         onUpdateAvailable: (callback: () => void) => {
-            ipcRenderer.on('update-available', callback);
-            return () => ipcRenderer.removeListener('update-available', callback);
+            const channel = 'update-available';
+            ipcRenderer.on(channel, () => callback());
+            return () => ipcRenderer.removeListener(channel, callback);
         },
         onUpdateDownloaded: (callback: () => void) => {
-            ipcRenderer.on('update-downloaded', callback);
-            return () => ipcRenderer.removeListener('update-downloaded', callback);
+            const channel = 'update-downloaded';
+            ipcRenderer.on(channel, () => callback());
+            return () => ipcRenderer.removeListener(channel, callback);
         },
         installUpdate: () => ipcRenderer.invoke('install-update'),
 
@@ -43,3 +51,5 @@ contextBridge.exposeInMainWorld(
         disablePlugin: (pluginId: string) => ipcRenderer.invoke('disable-plugin', pluginId)
     }
 );
+
+console.log('Electron API 已暴露到渲染进程');

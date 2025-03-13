@@ -7,12 +7,12 @@ directories:
   buildResources: resources
 
 files:
-  - from: dist
-    to: .
-    filter:
-      - "**/*"
+  - dist/**/*
   - node_modules/**/*
   - package.json
+  - !dist/renderer/**/*
+  - dist/renderer/index.html
+  - dist/renderer/assets/**/*
 
 extraResources:
   - plugins/**/*

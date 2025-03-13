@@ -60,36 +60,5 @@
     "typescript": "^5.2.2",
     "vite": "^4.5.0",
     "wait-on": "^8.0.3"
-  },
-  "build": {
-    "appId": "com.minecraft.client",
-    "productName": "Minecraft Client",
-    "files": [
-      "dist/**/*",
-      "!dist/renderer/**/*",
-      "dist/renderer/index.html",
-      "dist/renderer/assets/**/*",
-      "node_modules/**/*",
-      "package.json"
-    ],
-    "directories": {
-      "buildResources": "resources",
-      "output": "release"
-    },
-    "extraMetadata": {
-      "main": "main/index.js"
-    },
-    "win": {
-      "target": [
-        "nsis"
-      ]
-    },
-    "linux": {
-      "target": [
-        "AppImage",
-        "deb"
-      ],
-      "category": "Game"
-    }
   }
 }

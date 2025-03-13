@@ -3,7 +3,10 @@
  */
 
 interface Window {
-    api: {
+    api?: {
+        // 标识是否在Electron环境中
+        isElectron?: boolean;
+
         // Authentication
         loginOffline: (username: string) => Promise<{
             success: boolean;
@@ -41,15 +44,15 @@ interface Window {
         }>;
 
         // App updates
-        onUpdateAvailable: (callback: () => void) => () => void;
-        onUpdateDownloaded: (callback: () => void) => () => void;
-        installUpdate: () => Promise<void>;
+        onUpdateAvailable?: (callback: () => void) => () => void;
+        onUpdateDownloaded?: (callback: () => void) => () => void;
+        installUpdate?: () => Promise<void>;
 
         // Game events
-        onGameEvent: (callback: (event: string, data: any) => void) => () => void;
+        onGameEvent?: (callback: (event: string, data: any) => void) => () => void;
 
         // Plugin related
-        getPlugins: () => Promise<{
+        getPlugins?: () => Promise<{
             id: string;
             name: string;
             version: string;
@@ -58,7 +61,7 @@ interface Window {
             isActive: boolean;
         }[]>;
 
-        enablePlugin: (pluginId: string) => Promise<boolean>;
-        disablePlugin: (pluginId: string) => Promise<boolean>;
+        enablePlugin?: (pluginId: string) => Promise<boolean>;
+        disablePlugin?: (pluginId: string) => Promise<boolean>;
     };
 }

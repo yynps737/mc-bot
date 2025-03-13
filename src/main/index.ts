@@ -2,7 +2,7 @@ import { app, BrowserWindow, ipcMain } from 'electron';
 import * as path from 'path';
 import { autoUpdater } from 'electron-updater';
 import { initialize as initializeLogger, getLogger } from './core/utils/logger';
-import { initializeProtocol } from './core/network/protocol';
+import { initializeProtocol, setMainWindow } from './core/network/protocol';
 import { initializePlugins } from './core/plugins/loader';
 
 const logger = getLogger('main');
@@ -17,11 +17,15 @@ let mainWindow: BrowserWindow | null = null;
 function createWindow() {
     logger.info('Creating main window');
 
+    // 确保preload脚本路径正确
+    const preloadScript = path.join(__dirname, 'preload.js');
+    logger.info(`Using preload script: ${preloadScript}`);
+
     mainWindow = new BrowserWindow({
         width: 1200,
         height: 800,
         webPreferences: {
-            preload: path.join(__dirname, 'preload.js'),
+            preload: preloadScript,
             contextIsolation: true,
             nodeIntegration: false,
         },
@@ -29,6 +33,13 @@ function createWindow() {
 
     // 设置窗口标题
     mainWindow.setTitle('Minecraft Client');
+
+    // 设置主窗口引用
+    if (typeof setMainWindow === 'function') {
+        setMainWindow(mainWindow);
+    } else {
+        logger.error('setMainWindow function not available');
+    }
 
     // 根据环境决定加载方式
     const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
@@ -38,14 +49,15 @@ function createWindow() {
         const serverUrl = 'http://localhost:3000';
         logger.info(`Loading from dev server: ${serverUrl}`);
 
+        // 立即打开开发者工具以便调试
+        mainWindow.webContents.openDevTools();
+
         // 延时加载确保开发服务器准备就绪
         setTimeout(() => {
             if (mainWindow) {
                 mainWindow.loadURL(serverUrl)
                     .then(() => {
                         logger.info('Successfully loaded from dev server');
-                        // 打开开发者工具
-                        mainWindow?.webContents.openDevTools();
                     })
                     .catch((err) => {
                         logger.error(`Failed to load from dev server: ${err}`);
@@ -57,7 +69,7 @@ function createWindow() {
         }, 1000); // 给予 Vite 服务器 1 秒准备时间
     } else {
         // 生产模式 - 从构建文件加载
-        const filePath = path.join(__dirname, '../../dist/renderer/index.html');
+        const filePath = path.join(__dirname, '../renderer/index.html');
         logger.info(`Loading from file: ${filePath}`);
         mainWindow.loadFile(filePath)
             .catch(err => logger.error(`Failed to load from file: ${err}`));
@@ -122,6 +134,22 @@ ipcMain.handle('connect-to-server', async (_, data: {
 }) => {
     const { connectToServer } = await import('./core/network/protocol');
     return connectToServer(data);
+});
+
+// 添加插件相关的IPC处理器
+ipcMain.handle('get-plugins', async () => {
+    const { getPluginManager } = await import('./core/plugins/loader');
+    return getPluginManager().getPluginList();
+});
+
+ipcMain.handle('enable-plugin', async (_, pluginId: string) => {
+    const { getPluginManager } = await import('./core/plugins/loader');
+    return getPluginManager().enablePlugin(pluginId);
+});
+
+ipcMain.handle('disable-plugin', async (_, pluginId: string) => {
+    const { getPluginManager } = await import('./core/plugins/loader');
+    return getPluginManager().disablePlugin(pluginId);
 });
 
 // Auto-update events
