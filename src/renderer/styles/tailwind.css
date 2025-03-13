@@ -2,24 +2,153 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom styles can be added here */
-body {
-    @apply bg-gray-900 text-white;
+/* 基础样式与全局重置 */
+@layer base {
+    body {
+        @apply bg-gray-900 text-white font-sans antialiased;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* 更好的焦点状态样式 */
+    :focus-visible {
+        @apply outline-none ring-2 ring-green-500 ring-offset-2 ring-offset-gray-800;
+    }
+
+    /* 中文字体优化 */
+    :lang(zh), :lang(zh-CN) {
+        font-feature-settings: "tnum";
+    }
+
+    /* 滚动条样式 */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        @apply bg-gray-800;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        @apply bg-gray-600 rounded-full;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        @apply bg-gray-500;
+    }
+
+    /* 文本选择样式 */
+    ::selection {
+        @apply bg-green-500/30 text-white;
+    }
 }
 
-::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+/* 组件样式 */
+@layer components {
+    /* 按钮样式 */
+    .btn {
+        @apply px-4 py-2 rounded-lg font-medium transition-all duration-200;
+    }
+
+    .btn-primary {
+        @apply bg-green-600 hover:bg-green-700 text-white hover:shadow-lg hover:shadow-green-600/30;
+    }
+
+    .btn-secondary {
+        @apply bg-gray-700 hover:bg-gray-600 text-white;
+    }
+
+    .btn-danger {
+        @apply bg-red-500 hover:bg-red-600 text-white hover:shadow-lg hover:shadow-red-500/30;
+    }
+
+    /* 输入框样式 */
+    .input {
+        @apply w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all;
+    }
+
+    /* 卡片样式 */
+    .card {
+        @apply bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700 overflow-hidden shadow-xl;
+    }
+
+    .card-header {
+        @apply p-4 bg-gray-700/50 border-b border-gray-700;
+    }
+
+    .card-body {
+        @apply p-4;
+    }
+
+    /* 切换开关 */
+    .toggle {
+        @apply relative inline-flex items-center cursor-pointer;
+    }
+
+    .toggle-input {
+        @apply sr-only peer;
+    }
+
+    .toggle-bg {
+        @apply w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500;
+    }
+
+    /* Minecraft风格方块元素 */
+    .minecraft-block {
+        @apply relative border-2 border-black rounded-none shadow-md;
+    }
+
+    .minecraft-block-grass {
+        @apply minecraft-block bg-minecraft-green border-minecraft-darkgreen;
+    }
+
+    .minecraft-block-dirt {
+        @apply minecraft-block bg-minecraft-dirt;
+    }
+
+    .minecraft-block-stone {
+        @apply minecraft-block bg-minecraft-stone;
+    }
+
+    .minecraft-block-water {
+        @apply minecraft-block bg-minecraft-water;
+    }
 }
 
-::-webkit-scrollbar-track {
-    @apply bg-gray-800;
-}
+/* 动画相关样式 */
+@layer utilities {
+    /* 悬浮动画效果 */
+    .hover-float {
+        @apply transition-transform duration-300 hover:-translate-y-1;
+    }
 
-::-webkit-scrollbar-thumb {
-    @apply bg-gray-600 rounded;
-}
+    /* 发光效果 */
+    .glow {
+        @apply shadow-neon;
+    }
 
-::-webkit-scrollbar-thumb:hover {
-    @apply bg-gray-500;
+    .glow-lg {
+        @apply shadow-neon-lg;
+    }
+
+    /* 毛玻璃效果 */
+    .glass {
+        @apply backdrop-blur-md bg-white/10;
+    }
+
+    .glass-dark {
+        @apply backdrop-blur-md bg-black/30;
+    }
+
+    /* 像素风格边框 */
+    .pixel-border {
+        @apply border-2 border-black relative;
+    }
+
+    .pixel-border::before {
+        content: '';
+        @apply absolute inset-0 border-2 border-white opacity-20;
+    }
 }
