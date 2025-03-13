@@ -15,6 +15,8 @@ initializePlugins();
 let mainWindow: BrowserWindow | null = null;
 
 function createWindow() {
+    logger.info('Creating main window');
+
     mainWindow = new BrowserWindow({
         width: 1200,
         height: 800,
@@ -25,38 +27,71 @@ function createWindow() {
         },
     });
 
-    // Load the app
-    if (process.env.NODE_ENV === 'development') {
-        // In development, load from dev server
-        mainWindow.loadURL('http://localhost:3000');
-        // Open DevTools automatically in development
-        mainWindow.webContents.openDevTools();
+    // 设置窗口标题
+    mainWindow.setTitle('Minecraft Client');
+
+    // 根据环境决定加载方式
+    const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
+
+    if (isDev) {
+        // 开发模式 - 从开发服务器加载
+        const serverUrl = 'http://localhost:3000';
+        logger.info(`Loading from dev server: ${serverUrl}`);
+
+        // 延时加载确保开发服务器准备就绪
+        setTimeout(() => {
+            if (mainWindow) {
+                mainWindow.loadURL(serverUrl)
+                    .then(() => {
+                        logger.info('Successfully loaded from dev server');
+                        // 打开开发者工具
+                        mainWindow?.webContents.openDevTools();
+                    })
+                    .catch((err) => {
+                        logger.error(`Failed to load from dev server: ${err}`);
+                        // 尝试备用加载方式
+                        mainWindow?.loadFile(path.join(__dirname, '../../src/renderer/index.html'))
+                            .catch(e => logger.error(`Also failed to load from file: ${e}`));
+                    });
+            }
+        }, 1000); // 给予 Vite 服务器 1 秒准备时间
     } else {
-        // In production, load from built files
-        mainWindow.loadFile(path.join(__dirname, '../../dist/renderer/index.html'));
+        // 生产模式 - 从构建文件加载
+        const filePath = path.join(__dirname, '../../dist/renderer/index.html');
+        logger.info(`Loading from file: ${filePath}`);
+        mainWindow.loadFile(filePath)
+            .catch(err => logger.error(`Failed to load from file: ${err}`));
     }
 
     mainWindow.on('closed', () => {
+        logger.info('Main window closed');
         mainWindow = null;
     });
 }
 
 app.on('ready', () => {
+    logger.info('App is ready, creating window');
     createWindow();
 
-    // Check for updates
-    if (process.env.NODE_ENV !== 'development') {
+    // 检查更新
+    if (!app.isPackaged) {
+        logger.info('Development mode, skipping update check');
+    } else {
+        logger.info('Checking for updates');
         autoUpdater.checkForUpdatesAndNotify();
     }
 });
 
 app.on('window-all-closed', () => {
+    logger.info('All windows closed');
     if (process.platform !== 'darwin') {
+        logger.info('Quitting app');
         app.quit();
     }
 });
 
 app.on('activate', () => {
+    logger.info('App activated');
     if (mainWindow === null) {
         createWindow();
     }
@@ -91,17 +126,20 @@ ipcMain.handle('connect-to-server', async (_, data: {
 
 // Auto-update events
 autoUpdater.on('update-available', () => {
+    logger.info('Update available');
     if (mainWindow) {
         mainWindow.webContents.send('update-available');
     }
 });
 
 autoUpdater.on('update-downloaded', () => {
+    logger.info('Update downloaded');
     if (mainWindow) {
         mainWindow.webContents.send('update-downloaded');
     }
 });
 
 ipcMain.handle('install-update', () => {
+    logger.info('Installing update');
     autoUpdater.quitAndInstall();
 });
