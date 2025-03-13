@@ -6,7 +6,7 @@ import './styles/tailwind.css';
 if (typeof window !== 'undefined' && !window.api) {
     window.api = {
         isElectron: false,
-        loginOffline: async (username: string) => ({
+        loginOffline: async (username) => ({
             success: true,
             username,
             uuid: 'mock-uuid-' + username

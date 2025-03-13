@@ -225,9 +225,9 @@ const GameInterface: React.FC<GameInterfaceProps> = ({ onDisconnect, username, g
                         ) : (
                             chatMessages.map((msg, index) => (
                                 <div key={index} className="mb-1 last:mb-0">
-                                    <span className="text-gray-400 text-xs mr-2">
-                                        {msg.timestamp.toLocaleTimeString()}
-                                    </span>
+                  <span className="text-gray-400 text-xs mr-2">
+                    {msg.timestamp.toLocaleTimeString()}
+                  </span>
                                     <span
                                         className={`font-medium mr-2 ${
                                             msg.sender === 'System' ? 'text-primary-500' :
@@ -235,8 +235,8 @@ const GameInterface: React.FC<GameInterfaceProps> = ({ onDisconnect, username, g
                                                     msg.sender === username ? 'text-green-500' : 'text-blue-500'
                                         }`}
                                     >
-                                        {msg.sender}:
-                                    </span>
+                    {msg.sender}:
+                  </span>
                                     <span className="text-gray-800">{msg.message}</span>
                                 </div>
                             ))

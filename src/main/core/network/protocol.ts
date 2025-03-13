@@ -1,10 +1,10 @@
-import mineflayer from 'mineflayer';
+import mineflayer, { Bot, BotOptions } from 'mineflayer';
 import { BrowserWindow } from 'electron';
 import { getLogger } from '../utils/logger';
 import { getPluginManager } from '../plugins/loader';
 
 const logger = getLogger('network:protocol');
-let activeBot: mineflayer.Bot | null = null;
+let activeBot: Bot | null = null;
 let mainWindow: BrowserWindow | null = null;
 
 export function initializeProtocol(): void {
@@ -15,26 +15,24 @@ export function setMainWindow(window: BrowserWindow): void {
     mainWindow = window;
 }
 
-export async function connectToServer({
-                                          serverIp,
-                                          serverPort,
-                                          version,
-                                          username,
-                                          token
-                                      }: {
+interface ServerConnectionOptions {
     serverIp: string;
     serverPort: number;
     version: string;
     username: string;
     token?: string;
-}): Promise<{ success: boolean; error?: string }> {
+}
+
+export async function connectToServer({
+                                          serverIp, serverPort, version, username, token
+                                      }: ServerConnectionOptions): Promise<{ success: boolean; error?: string }> {
     try {
         if (activeBot) {
             activeBot.end('正在连接到其他服务器');
             activeBot = null;
         }
 
-        const botOptions: mineflayer.BotOptions = {
+        const botOptions: BotOptions = {
             host: serverIp,
             port: serverPort,
             username,
@@ -43,7 +41,8 @@ export async function connectToServer({
         };
 
         if (token) {
-            botOptions.password = token;
+            // 使用类型断言告诉TypeScript我们知道这个属性是有效的
+            (botOptions as any).password = token;
         }
 
         const bot = mineflayer.createBot(botOptions);
@@ -77,16 +76,16 @@ export async function connectToServer({
     }
 }
 
-function setupBotEventHandlers(bot: mineflayer.Bot): void {
-    bot.on('chat', (username, message) => {
+function setupBotEventHandlers(bot: Bot): void {
+    bot.on('chat', (username: string, message: string) => {
         sendGameEvent('chat', { username, message });
     });
 
-    bot.on('kicked', (reason) => {
+    bot.on('kicked', (reason: string) => {
         sendGameEvent('kicked', { reason });
     });
 
-    bot.on('error', (err) => {
+    bot.on('error', (err: Error) => {
         sendGameEvent('error', { message: err.message });
     });
 
@@ -108,11 +107,11 @@ function setupBotEventHandlers(bot: mineflayer.Bot): void {
         }
     });
 
-    bot.on('playerJoined', (player) => {
+    bot.on('playerJoined', (player: any) => {
         sendGameEvent('playerJoined', { username: player.username });
     });
 
-    bot.on('playerLeft', (player) => {
+    bot.on('playerLeft', (player: any) => {
         sendGameEvent('playerLeft', { username: player.username });
     });
 
@@ -129,7 +128,7 @@ function sendGameEvent(event: string, data: any): void {
     }
 }
 
-export function getActiveBot(): mineflayer.Bot | null {
+export function getActiveBot(): Bot | null {
     return activeBot;
 }
 

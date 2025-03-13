@@ -37,7 +37,14 @@ export function initialize(): void {
     logger.info(`平台: ${process.platform}`);
 }
 
-export function getLogger(moduleName: string) {
+interface Logger {
+    debug: (message: string, ...args: any[]) => void;
+    info: (message: string, ...args: any[]) => void;
+    warn: (message: string, ...args: any[]) => void;
+    error: (message: string, ...args: any[]) => void;
+}
+
+export function getLogger(moduleName: string): Logger {
     if (!initialized) {
         initialize();
     }

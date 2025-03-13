@@ -13,6 +13,10 @@ export interface MinecraftVersion {
     supported: boolean;
 }
 
+interface VersionGroups {
+    [key: string]: MinecraftVersion[];
+}
+
 const SUPPORTED_VERSIONS = [
     '1.12.2',
     '1.13', '1.13.1', '1.13.2',
@@ -67,13 +71,13 @@ export async function getAvailableVersions(): Promise<MinecraftVersion[]> {
 
 export async function getSupportedVersions(): Promise<MinecraftVersion[]> {
     const versions = await getAvailableVersions();
-    return versions.filter(version => version.supported);
+    return versions.filter((version: MinecraftVersion) => version.supported);
 }
 
 export async function getRecommendedVersions(): Promise<MinecraftVersion[]> {
     const versions = await getSupportedVersions();
-    const releaseVersions = versions.filter(v => v.type === 'release');
-    const versionGroups: Record<string, MinecraftVersion[]> = {};
+    const releaseVersions = versions.filter((v: MinecraftVersion) => v.type === 'release');
+    const versionGroups: VersionGroups = {};
 
     for (const version of releaseVersions) {
         const majorMinor = version.id.split('.').slice(0, 2).join('.');
@@ -84,6 +88,7 @@ export async function getRecommendedVersions(): Promise<MinecraftVersion[]> {
     }
 
     return Object.values(versionGroups).map(group =>
-        group.sort((a, b) => new Date(b.releaseTime).getTime() - new Date(a.releaseTime).getTime())[0]
+        group.sort((a: MinecraftVersion, b: MinecraftVersion) =>
+            new Date(b.releaseTime).getTime() - new Date(a.releaseTime).getTime())[0]
     );
 }

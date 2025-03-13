@@ -22,6 +22,14 @@ interface TokenResponse {
     expires_in: number;
 }
 
+interface AuthData {
+    username: string;
+    uuid: string;
+    token: string;
+    refreshToken: string;
+    expiresAt: number;
+}
+
 export async function startMicrosoftAuth(): Promise<{
     success: boolean;
     username?: string;
@@ -47,13 +55,8 @@ export async function startMicrosoftAuth(): Promise<{
         authUrl.searchParams.append('scope', 'XboxLive.signin offline_access');
 
         const authWindow = new BrowserWindow({
-            width: 800,
-            height: 600,
-            show: true,
-            webPreferences: {
-                nodeIntegration: false,
-                contextIsolation: true
-            }
+            width: 800, height: 600, show: true,
+            webPreferences: { nodeIntegration: false, contextIsolation: true }
         });
 
         return new Promise((resolve) => {
@@ -63,7 +66,6 @@ export async function startMicrosoftAuth(): Promise<{
 
                 if (code) {
                     authWindow.close();
-
                     try {
                         const msTokens = await getMicrosoftToken(code);
                         const xblToken = await getXboxLiveToken(msTokens.access_token);
@@ -95,10 +97,7 @@ export async function startMicrosoftAuth(): Promise<{
             });
 
             authWindow.on('closed', () => {
-                resolve({
-                    success: false,
-                    error: '认证窗口已关闭'
-                });
+                resolve({ success: false, error: '认证窗口已关闭' });
             });
 
             authWindow.loadURL(authUrl.toString());
@@ -118,11 +117,8 @@ async function getMicrosoftToken(code: string): Promise<TokenResponse> {
         grant_type: 'authorization_code',
         redirect_uri: REDIRECT_URI
     }), {
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        }
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
     });
-
     return response.data;
 }
 
@@ -141,7 +137,6 @@ async function getXboxLiveToken(accessToken: string): Promise<string> {
             Accept: 'application/json'
         }
     });
-
     return response.data.Token;
 }
 
@@ -159,7 +154,6 @@ async function getXSTSToken(xblToken: string): Promise<{ token: string; userHash
             Accept: 'application/json'
         }
     });
-
     return {
         token: response.data.Token,
         userHash: response.data.DisplayClaims.xui[0].uhs
@@ -175,30 +169,20 @@ async function getMinecraftToken(xstsData: { token: string; userHash: string }):
             Accept: 'application/json'
         }
     });
-
     return response.data.access_token;
 }
 
 async function getMinecraftProfile(minecraftToken: string): Promise<{ id: string; name: string }> {
     const response = await axios.get(MINECRAFT_PROFILE_URL, {
-        headers: {
-            Authorization: `Bearer ${minecraftToken}`
-        }
+        headers: { Authorization: `Bearer ${minecraftToken}` }
     });
-
     return {
         id: response.data.id,
         name: response.data.name
     };
 }
 
-function cacheAuth(authData: {
-    username: string;
-    uuid: string;
-    token: string;
-    refreshToken: string;
-    expiresAt: number;
-}): void {
+function cacheAuth(authData: AuthData): void {
     const encryptedData = encryptData(JSON.stringify(authData));
     store.set('microsoft_auth', encryptedData);
 }
@@ -208,11 +192,8 @@ function getCachedAuth(): { username: string; uuid: string; token: string } | nu
         const encryptedData = store.get('microsoft_auth') as string | undefined;
         if (!encryptedData) return null;
 
-        const authData = JSON.parse(encryptedData);
-
-        if (authData.expiresAt < Date.now()) {
-            return null;
-        }
+        const authData = JSON.parse(encryptedData) as AuthData;
+        if (authData.expiresAt < Date.now()) return null;
 
         return {
             username: authData.username,

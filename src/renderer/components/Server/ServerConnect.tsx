@@ -178,8 +178,8 @@ const ServerConnect: React.FC<ServerConnectProps> = ({ onConnect }) => {
                                                 />
                                                 <span className="flex-grow">{version.id}</span>
                                                 <span className="text-xs text-gray-500">
-                                                    {version.type === 'release' ? '正式版' : version.type}
-                                                </span>
+                          {version.type === 'release' ? '正式版' : version.type}
+                        </span>
                                             </label>
                                         ))}
                                     </div>
@@ -223,9 +223,9 @@ const ServerConnect: React.FC<ServerConnectProps> = ({ onConnect }) => {
                                 }}
                             >
                                 <div className="flex items-center">
-                                    <span className="w-8 h-8 flex items-center justify-center bg-accent-100 rounded-lg mr-2 text-xl">
-                                        {server.logo}
-                                    </span>
+                  <span className="w-8 h-8 flex items-center justify-center bg-accent-100 rounded-lg mr-2 text-xl">
+                    {server.logo}
+                  </span>
                                     <div className="text-left">
                                         <div className="font-medium text-gray-800">{server.name}</div>
                                         <div className="text-xs text-gray-500">{server.ip}</div>

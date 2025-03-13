@@ -4,7 +4,7 @@ import { getLogger } from '../utils/logger';
 const logger = getLogger('auth:offline');
 
 function generateOfflineUUID(username: string): string {
-    const hash = String(username.split('').reduce((a, b) => {
+    const hash = String(username.split('').reduce((a: number, b: string) => {
         a = ((a << 5) - a) + b.charCodeAt(0);
         return a & a;
     }, 0));

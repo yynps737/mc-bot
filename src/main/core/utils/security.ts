@@ -13,7 +13,6 @@ const ITERATIONS = 100000;
 function getMachineId(): string {
     const userData = app.getPath('userData');
     const machineName = app.getPath('home');
-
     return crypto
         .createHash('sha256')
         .update(`${userData}:${machineName}:${process.platform}`)
@@ -36,14 +35,12 @@ export function encryptData(data: string): string {
         encrypted += cipher.final('hex');
         const tag = cipher.getAuthTag();
 
-        const result = [
+        return [
             salt.toString('hex'),
             iv.toString('hex'),
             tag.toString('hex'),
             encrypted
         ].join(':');
-
-        return result;
     } catch (error) {
         logger.error('加密错误:', error);
         throw new Error('加密数据失败');
@@ -53,7 +50,6 @@ export function encryptData(data: string): string {
 export function decryptData(encryptedData: string): string {
     try {
         const [saltHex, ivHex, tagHex, encrypted] = encryptedData.split(':');
-
         if (!saltHex || !ivHex || !tagHex || !encrypted) {
             throw new Error('无效的加密数据格式');
         }
@@ -88,7 +84,6 @@ export function hashPassword(password: string): string {
 
 export function verifyPassword(password: string, hashedPassword: string): boolean {
     const [saltHex, originalHash] = hashedPassword.split(':');
-
     if (!saltHex || !originalHash) {
         return false;
     }

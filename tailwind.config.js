@@ -11,6 +11,30 @@ module.exports = {
                 mono: ['"JetBrains Mono"', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', 'monospace'],
             },
             colors: {
+                primary: {
+                    50: '#f0f9ff',
+                    100: '#e0f2fe',
+                    200: '#bae6fd',
+                    300: '#7dd3fc',
+                    400: '#38bdf8',
+                    500: '#0ea5e9',
+                    600: '#0284c7',
+                    700: '#0369a1',
+                    800: '#075985',
+                    900: '#0c4a6e',
+                },
+                accent: {
+                    50: '#f0fdfa',
+                    100: '#ccfbf1',
+                    200: '#99f6e4',
+                    300: '#5eead4',
+                    400: '#2dd4bf',
+                    500: '#14b8a6',
+                    600: '#0d9488',
+                    700: '#0f766e',
+                    800: '#115e59',
+                    900: '#134e4a',
+                },
                 minecraft: {
                     green: '#5AC424',
                     darkgreen: '#3A8F17',
@@ -35,13 +59,14 @@ module.exports = {
                 },
             },
             boxShadow: {
+                'cute': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
+                'cute-lg': '0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025)',
                 'neon': '0 0 5px theme(colors.green.400), 0 0 20px theme(colors.green.600)',
                 'neon-lg': '0 0 10px theme(colors.green.400), 0 0 30px theme(colors.green.600), 0 0 50px theme(colors.green.800)',
             },
         },
     },
     plugins: [
-        require('tailwindcss-textshadow'),
         function({ addUtilities }) {
             const newUtilities = {
                 '.scrollbar-thin': {
